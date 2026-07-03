@@ -108,7 +108,7 @@ export function useAudioLive({
       formData.append('audio', blob, 'candidate-response.webm');
 
       console.log('[REST Fallback] Uploading audio chunk to REST API...');
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL;
       const response = await fetch(`${apiUrl}/interview/message`, {
         method: 'POST',
         headers: {
