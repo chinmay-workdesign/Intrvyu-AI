@@ -14,7 +14,6 @@ import {
   CheckCircle2, 
   AlertCircle, 
   BookOpen, 
-  Calendar,
   Layers,
   ArrowRight,
   TrendingUp,
@@ -70,13 +69,11 @@ export default function FeedbackReportPage({ params }: FeedbackPageProps) {
     // Choose appropriate voice characteristics
     const voices = synthRef.current.getVoices();
     if (speaker === 'INTERVIEWER') {
-      // Find a premium feminine or distinct voice for AI if available
       const femaleVoice = voices.find(v => v.name.includes('Google US English') || v.name.includes('Zira') || v.name.includes('Female'));
       if (femaleVoice) utterance.voice = femaleVoice;
       utterance.pitch = 1.05;
       utterance.rate = 0.95;
     } else {
-      // Masculine or generic local user voice
       const maleVoice = voices.find(v => v.name.includes('David') || v.name.includes('Male'));
       if (maleVoice) utterance.voice = maleVoice;
       utterance.pitch = 0.95;
@@ -109,11 +106,11 @@ export default function FeedbackReportPage({ params }: FeedbackPageProps) {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-neutral-950 text-neutral-100">
+      <div className="min-h-screen flex items-center justify-center bg-base text-txt-primary">
         <div className="text-center space-y-4">
-          <Loader2 className="w-10 h-10 animate-spin text-indigo-400 mx-auto" />
-          <h3 className="text-base font-semibold">Compiling interview insights...</h3>
-          <p className="text-xs text-neutral-500">This will take a few seconds as we structure your report.</p>
+          <Loader2 className="w-8 h-8 animate-spin text-accent mx-auto" />
+          <h3 className="text-xs font-mono tracking-wider uppercase text-txt-secondary">COMPILING RUN INSIGHTS...</h3>
+          <p className="text-xs text-txt-secondary">Synthesizing vocal transcripts and STAR scoring blocks.</p>
         </div>
       </div>
     );
@@ -121,16 +118,16 @@ export default function FeedbackReportPage({ params }: FeedbackPageProps) {
 
   if (error || !feedbackData) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-neutral-950 p-6">
-        <div className="glass-card p-8 rounded-2xl border border-white/10 text-center space-y-4 max-w-sm">
-          <Info className="w-8 h-8 text-indigo-400 mx-auto" />
-          <h3 className="text-lg font-bold text-white">Report Not Found</h3>
-          <p className="text-sm text-neutral-400">
+      <div className="min-h-screen flex items-center justify-center bg-base p-6 text-txt-primary">
+        <div className="flat-card p-8 rounded-xl text-center space-y-4 max-w-sm">
+          <Info className="w-8 h-8 text-accent mx-auto" />
+          <h3 className="text-lg font-display font-semibold">Report Not Found</h3>
+          <p className="text-xs text-txt-secondary leading-relaxed">
             This interview session feedback report is not generated yet or failed.
           </p>
           <button 
             onClick={() => router.push('/dashboard')}
-            className="w-full bg-white text-neutral-950 font-semibold py-2.5 rounded-xl hover:bg-neutral-200 text-sm transition-colors"
+            className="w-full bg-accent text-base font-semibold py-2.5 rounded text-xs active:scale-[0.98] transition-colors"
           >
             Return to Dashboard
           </button>
@@ -160,60 +157,53 @@ export default function FeedbackReportPage({ params }: FeedbackPageProps) {
   const sessionType = session?.type || 'mock';
 
   return (
-    <div className="min-h-screen bg-neutral-950 text-neutral-100 flex flex-col justify-between print:bg-white print:text-neutral-900">
+    <div className="min-h-screen bg-base text-txt-primary flex flex-col justify-between print:bg-white print:text-neutral-900">
       
-      {/* Background Glows */}
-      <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] rounded-full bg-indigo-500/5 blur-[150px] pointer-events-none print:hidden" />
-      <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-violet-600/5 blur-[150px] pointer-events-none print:hidden" />
-
       {/* Header */}
-      <header className="w-full border-b border-white/[0.05] bg-neutral-950/70 backdrop-blur-md sticky top-0 z-20 print:hidden">
+      <header className="w-full border-b border-hairline bg-base sticky top-0 z-20 print:hidden">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <Link 
             href="/dashboard" 
-            className="inline-flex items-center gap-1.5 text-sm font-semibold text-neutral-400 hover:text-white transition-colors"
+            className="inline-flex items-center gap-1.5 text-xs font-mono font-bold text-txt-secondary hover:text-txt-primary transition-colors"
           >
-            <ArrowLeft className="w-4 h-4" />
-            Dashboard
+            <ArrowLeft className="w-3.5 h-3.5" />
+            BACK TO DASHBOARD
           </Link>
           
           <button
             onClick={handlePrint}
-            className="inline-flex items-center gap-1.5 bg-white/[0.03] border border-white/10 hover:bg-white/[0.08] text-neutral-200 font-semibold px-4 py-2 rounded-xl text-xs active:scale-95 transition-transform"
+            className="inline-flex items-center gap-1.5 bg-surface border border-hairline hover:bg-base text-txt-primary font-semibold px-4 py-2 rounded text-xs transition-colors"
           >
             <Download className="w-3.5 h-3.5" />
-            Print / PDF Report
+            Print Report / PDF
           </button>
         </div>
       </header>
 
       {/* Report Body */}
-      <main className="flex-1 w-full max-w-5xl mx-auto px-6 py-10 space-y-10 print:py-0 print:px-0">
+      <main className="flex-1 w-full max-w-5xl mx-auto px-6 py-10 space-y-8 print:py-0 print:px-0">
         
-        {/* Main Dashboard Card */}
-        <section className="grid grid-cols-1 md:grid-cols-3 gap-8 items-center bg-gradient-to-tr from-indigo-500/5 via-violet-500/5 to-transparent border border-white/[0.08] p-8 rounded-3xl relative overflow-hidden print:border-neutral-200 print:bg-none">
-          <div className="absolute top-0 right-0 w-64 h-64 rounded-full bg-indigo-500/5 blur-[80px] pointer-events-none print:hidden" />
+        {/* Main Dashboard Card (Flat, no radial glow/gradient) */}
+        <section className="grid grid-cols-1 md:grid-cols-3 gap-8 items-center flat-card p-6 md:p-8 rounded-xl bg-surface print:border-neutral-200 print:bg-none">
           
           {/* Circular Score Gauge */}
-          <div className="flex flex-col items-center justify-center text-center space-y-2">
-            <div className="relative w-36 h-36 flex items-center justify-center">
-              {/* Background ring */}
+          <div className="flex flex-col items-center justify-center text-center space-y-3">
+            <div className="relative w-32 h-32 flex items-center justify-center">
               <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
                 <circle
                   cx="50"
                   cy="50"
                   r="42"
-                  stroke="rgba(255, 255, 255, 0.04)"
+                  stroke="#34312A"
                   strokeWidth="6"
                   fill="transparent"
                   className="print:stroke-neutral-100"
                 />
-                {/* Active circle */}
                 <circle
                   cx="50"
                   cy="50"
                   r="42"
-                  stroke="url(#indigoGrad)"
+                  stroke="#D98E3F"
                   strokeWidth="7"
                   fill="transparent"
                   strokeDasharray="263.8"
@@ -221,28 +211,22 @@ export default function FeedbackReportPage({ params }: FeedbackPageProps) {
                   strokeLinecap="round"
                   className="transition-all duration-1000 ease-out print:stroke-indigo-600"
                 />
-                <defs>
-                  <linearGradient id="indigoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stopColor="#6366f1" />
-                    <stop offset="100%" stopColor="#8b5cf6" />
-                  </linearGradient>
-                </defs>
               </svg>
               <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <span className="text-4xl font-extrabold text-white print:text-neutral-900 tracking-tight">{overallScore}</span>
-                <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest block">Overall</span>
+                <span className="text-3xl font-mono font-bold text-txt-primary print:text-neutral-900 tracking-tight">{overallScore}%</span>
+                <span className="text-[8px] font-mono text-txt-secondary uppercase tracking-widest block">OVERALL</span>
               </div>
             </div>
-            <div className="space-y-1">
-              <span className="text-xs bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 px-2 py-0.5 rounded-full font-semibold uppercase tracking-wider print:border-indigo-600 print:text-indigo-600">
+            <div>
+              <span className="bg-accent/15 border border-accent/30 text-accent text-[9px] font-mono px-2 py-0.5 rounded font-bold uppercase tracking-wider">
                 {sessionType.replace('_', ' ')} track
               </span>
             </div>
           </div>
 
-          {/* Sub category score sliding lists */}
+          {/* Sub category score lists */}
           <div className="md:col-span-2 space-y-4">
-            <h2 className="text-xl font-bold text-white print:text-neutral-900 tracking-tight">Competency Breakdown</h2>
+            <h2 className="text-lg font-display font-semibold text-txt-primary print:text-neutral-900 tracking-tight">Competency Assessment</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               
               {/* Category sliders */}
@@ -256,74 +240,79 @@ export default function FeedbackReportPage({ params }: FeedbackPageProps) {
                   { label: 'Leadership', score: leadershipScore },
                   { label: 'Behavioral Fit', score: behavioralScore }
                 ] : [])
-              ].map((cat, idx) => (
-                <div key={idx} className="space-y-1.5">
-                  <div className="flex justify-between text-xs font-semibold">
-                    <span className="text-neutral-400 print:text-neutral-600">{cat.label}</span>
-                    <span className="text-white print:text-neutral-900">{cat.score}%</span>
+              ].map((cat, idx) => {
+                // Sage for >=70 (strong), clay for <70 (weak)
+                const isStrong = cat.score >= 70;
+                const barColorClass = isStrong ? 'bg-strong' : 'bg-weak';
+                return (
+                  <div key={idx} className="space-y-1.5">
+                    <div className="flex justify-between text-xs">
+                      <span className="text-txt-secondary font-mono uppercase tracking-tight text-[10px] print:text-neutral-600">{cat.label}</span>
+                      <span className="text-txt-primary font-mono font-semibold print:text-neutral-900">{cat.score}%</span>
+                    </div>
+                    <div className="w-full h-1.5 bg-base border border-hairline print:bg-neutral-100 rounded-full overflow-hidden">
+                      <div 
+                        style={{ width: `${cat.score}%` }}
+                        className={`h-full ${barColorClass} rounded-full`}
+                      />
+                    </div>
                   </div>
-                  <div className="w-full h-1.5 bg-white/[0.04] print:bg-neutral-100 rounded-full overflow-hidden">
-                    <div 
-                      style={{ width: `${cat.score}%` }}
-                      className="h-full bg-gradient-to-r from-indigo-500 to-violet-500 rounded-full print:bg-indigo-600"
-                    />
-                  </div>
-                </div>
-              ))}
+                );
+              })}
 
             </div>
           </div>
         </section>
 
         {/* Tab Controls */}
-        <section className="border-b border-white/[0.08] print:hidden">
-          <div className="flex gap-6 text-sm font-semibold">
+        <section className="border-b border-hairline print:hidden">
+          <div className="flex gap-6 text-xs font-mono uppercase tracking-wider font-bold">
             <button
               onClick={() => setActiveTab('insights')}
-              className={`pb-4 transition-all relative cursor-pointer ${
-                activeTab === 'insights' ? 'text-white border-b-2 border-indigo-500' : 'text-neutral-400 hover:text-white'
+              className={`pb-3 transition-all relative cursor-pointer ${
+                activeTab === 'insights' ? 'text-txt-primary border-b border-accent' : 'text-txt-secondary hover:text-txt-primary'
               }`}
             >
               Feedback Insights
             </button>
             <button
               onClick={() => setActiveTab('transcript')}
-              className={`pb-4 transition-all relative cursor-pointer ${
-                activeTab === 'transcript' ? 'text-white border-b-2 border-indigo-500' : 'text-neutral-400 hover:text-white'
+              className={`pb-3 transition-all relative cursor-pointer ${
+                activeTab === 'transcript' ? 'text-txt-primary border-b border-accent' : 'text-txt-secondary hover:text-txt-primary'
               }`}
             >
-              Voice Transcript Timeline
+              Transcript Timeline
             </button>
             <button
               onClick={() => setActiveTab('action_plan')}
-              className={`pb-4 transition-all relative cursor-pointer ${
-                activeTab === 'action_plan' ? 'text-white border-b-2 border-indigo-500' : 'text-neutral-400 hover:text-white'
+              className={`pb-3 transition-all relative cursor-pointer ${
+                activeTab === 'action_plan' ? 'text-txt-primary border-b border-accent' : 'text-txt-secondary hover:text-txt-primary'
               }`}
             >
-              Action Study Plan
+              Action Plan
             </button>
           </div>
         </section>
 
         {/* Dynamic Tab Renderers */}
-        <div className="space-y-8">
+        <div className="space-y-6">
           
           {/* TAB 1: INSIGHTS */}
-          {(activeTab === 'insights' || typeof window === 'undefined' /* Render all in PDF print */) && (
-            <div className="space-y-8 print:block">
+          {(activeTab === 'insights' || typeof window === 'undefined') && (
+            <div className="space-y-6 print:block">
               {/* Strengths & Weaknesses */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 
                 {/* Strengths */}
-                <div className="glass-card p-6 rounded-2xl border border-white/[0.05] space-y-4 print:border-neutral-200">
-                  <div className="flex items-center gap-2 text-emerald-400 font-bold">
-                    <CheckCircle2 className="w-5 h-5" />
-                    <h4>Core Strengths</h4>
+                <div className="flat-card p-6 rounded-xl space-y-4 print:border-neutral-200">
+                  <div className="flex items-center gap-2 text-strong font-bold">
+                    <CheckCircle2 className="w-4 h-4" />
+                    <h4 className="font-display text-sm uppercase tracking-wider">Core Strengths</h4>
                   </div>
-                  <ul className="space-y-3.5">
+                  <ul className="space-y-3 font-sans text-xs md:text-sm">
                     {strengths.map((str: string, i: number) => (
-                      <li key={i} className="text-sm text-neutral-300 print:text-neutral-800 leading-relaxed flex items-start gap-2.5">
-                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 mt-2 flex-shrink-0" />
+                      <li key={i} className="text-txt-secondary print:text-neutral-800 leading-relaxed flex items-start gap-2.5">
+                        <span className="w-1.5 h-1.5 rounded-full bg-strong mt-2 flex-shrink-0" />
                         {str}
                       </li>
                     ))}
@@ -331,15 +320,15 @@ export default function FeedbackReportPage({ params }: FeedbackPageProps) {
                 </div>
 
                 {/* Weaknesses */}
-                <div className="glass-card p-6 rounded-2xl border border-white/[0.05] space-y-4 print:border-neutral-200">
-                  <div className="flex items-center gap-2 text-rose-400 font-bold">
-                    <AlertCircle className="w-5 h-5" />
-                    <h4>Identified Gaps</h4>
+                <div className="flat-card p-6 rounded-xl space-y-4 print:border-neutral-200">
+                  <div className="flex items-center gap-2 text-weak font-bold">
+                    <AlertCircle className="w-4 h-4" />
+                    <h4 className="font-display text-sm uppercase tracking-wider">Identified Gaps</h4>
                   </div>
-                  <ul className="space-y-3.5">
+                  <ul className="space-y-3 font-sans text-xs md:text-sm">
                     {weaknesses.map((weak: string, i: number) => (
-                      <li key={i} className="text-sm text-neutral-300 print:text-neutral-800 leading-relaxed flex items-start gap-2.5">
-                        <span className="w-1.5 h-1.5 rounded-full bg-rose-400 mt-2 flex-shrink-0" />
+                      <li key={i} className="text-txt-secondary print:text-neutral-800 leading-relaxed flex items-start gap-2.5">
+                        <span className="w-1.5 h-1.5 rounded-full bg-weak mt-2 flex-shrink-0" />
                         {weak}
                       </li>
                     ))}
@@ -349,19 +338,19 @@ export default function FeedbackReportPage({ params }: FeedbackPageProps) {
               </div>
 
               {/* Transcript Evidence Quotes */}
-              <div className="glass-card p-6 rounded-2xl border border-white/[0.05] space-y-4 print:border-neutral-200">
-                <div className="flex items-center gap-2 text-indigo-400 font-bold">
-                  <Award className="w-5 h-5" />
-                  <h4>Transcript Highlights Analysis</h4>
+              <div className="flat-card p-6 rounded-xl space-y-4 print:border-neutral-200">
+                <div className="flex items-center gap-2 text-accent font-bold">
+                  <Award className="w-4 h-4" />
+                  <h4 className="font-display text-sm uppercase tracking-wider">Transcript Highlights Analysis</h4>
                 </div>
-                <div className="space-y-6">
+                <div className="space-y-4">
                   {transcriptEvidence.map((ev: any, i: number) => (
-                    <div key={i} className="border-l-2 border-indigo-500/20 pl-4 py-1 space-y-2">
-                      <blockquote className="text-sm italic text-neutral-300 print:text-neutral-700 leading-relaxed">
+                    <div key={i} className="border-l border-hairline pl-4 py-1 space-y-1.5">
+                      <blockquote className="text-xs md:text-sm italic text-txt-secondary print:text-neutral-700 leading-relaxed">
                         &ldquo;{ev.quote}&rdquo;
                       </blockquote>
-                      <p className="text-xs text-neutral-400 print:text-neutral-600 font-medium">
-                        <span className="text-indigo-400 font-semibold uppercase tracking-wider text-[10px] mr-1.5">Evaluation:</span>
+                      <p className="text-[11px] text-txt-secondary print:text-neutral-600 font-medium">
+                        <span className="text-accent font-mono text-[9px] uppercase tracking-wider mr-1.5">Evaluation:</span>
                         {ev.evaluation}
                       </p>
                     </div>
@@ -373,34 +362,33 @@ export default function FeedbackReportPage({ params }: FeedbackPageProps) {
 
           {/* TAB 2: FULL TRANSCRIPT TIMELINE */}
           {(activeTab === 'transcript' || typeof window === 'undefined') && (
-            <div className="space-y-6 print:block print:mt-10">
-              <div className="flex items-center gap-2 text-lg font-bold text-white print:text-neutral-900 mb-4">
-                <TrendingUp className="w-5 h-5 text-indigo-400" />
+            <div className="space-y-4 print:block print:mt-8">
+              <div className="flex items-center gap-2 text-sm font-semibold text-txt-primary print:text-neutral-900 mb-2 uppercase font-mono tracking-wider">
+                <TrendingUp className="w-4 h-4 text-accent" />
                 <h3>Conversation Log Replay</h3>
               </div>
 
               {messages.length > 0 ? (
-                <div className="space-y-4 max-h-[600px] overflow-y-auto pr-2 relative print:max-h-none print:overflow-visible">
+                <div className="space-y-4 max-h-[500px] overflow-y-auto pr-2 relative print:max-h-none print:overflow-visible">
                   {messages.map((msg: any, index: number) => {
                     const isAI = msg.speaker === 'INTERVIEWER';
                     return (
                       <div 
                         key={msg.id} 
-                        className={`flex items-start gap-4 p-4 rounded-2xl border transition-all ${
+                        className={`flex items-start gap-4 p-4 rounded-lg border transition-all ${
                           isAI 
-                            ? 'bg-indigo-500/[0.02] border-indigo-500/10 mr-12' 
-                            : 'bg-white/[0.02] border-white/5 ml-12'
+                            ? 'bg-surface/40 border-hairline mr-8 md:mr-16' 
+                            : 'bg-surface border-hairline ml-8 md:ml-16'
                         }`}
                       >
-                        {/* Audio play trigger */}
                         <button
                           onClick={() => handlePlayVoice(msg.text, index, msg.speaker)}
-                          className={`p-2.5 rounded-xl border flex-shrink-0 active:scale-95 transition-all print:hidden cursor-pointer ${
+                          className={`p-2 rounded border flex-shrink-0 active:scale-95 transition-all print:hidden cursor-pointer ${
                             speakingIndex === index
-                              ? 'bg-red-500/10 border-red-500/20 text-red-400'
+                              ? 'bg-live/10 border-live text-live'
                               : isAI 
-                              ? 'bg-indigo-500/10 border-indigo-500/20 text-indigo-400 hover:bg-indigo-500/20'
-                              : 'bg-white/5 border-white/10 text-neutral-300 hover:bg-white/10'
+                              ? 'bg-accent/10 border-accent/20 text-accent hover:bg-accent/20'
+                              : 'bg-base border-hairline text-txt-secondary hover:bg-surface'
                           }`}
                           title="Replay speech audio"
                         >
@@ -409,26 +397,26 @@ export default function FeedbackReportPage({ params }: FeedbackPageProps) {
 
                         <div className="space-y-1">
                           <div className="flex items-center gap-2">
-                            <span className={`text-[10px] font-bold uppercase tracking-wider ${isAI ? 'text-indigo-400' : 'text-neutral-400'}`}>
+                            <span className={`text-[9px] font-mono uppercase tracking-wider ${isAI ? 'text-accent' : 'text-txt-secondary'}`}>
                               {isAI ? 'Interviewer' : 'Candidate'}
                             </span>
-                            <span className="text-[9px] text-neutral-600">
+                            <span className="text-[9px] font-mono text-txt-secondary">
                               {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                             </span>
                           </div>
-                          <p className="text-sm text-neutral-300 print:text-neutral-800 leading-relaxed font-medium">
+                          <p className="text-xs md:text-sm text-txt-primary print:text-neutral-800 leading-relaxed">
                             {msg.text}
                           </p>
                           
-                          {/* Attach node evaluation summary if candidate response exists */}
+                          {/* Evaluator block */}
                           {!isAI && msg.evaluation && (
-                            <div className="mt-3 bg-white/[0.01] border border-white/[0.05] p-3 rounded-lg text-xs space-y-1 print:border-neutral-200">
-                              <div className="flex gap-4 text-[10px] font-semibold text-neutral-400">
+                            <div className="mt-3 bg-base/50 border border-hairline p-3 rounded text-xs space-y-1.5 print:border-neutral-200">
+                              <div className="flex gap-4 text-[9px] font-mono text-txt-secondary uppercase tracking-tight">
                                 <span>Comm: {msg.evaluation.communication}/10</span>
                                 <span>Depth: {msg.evaluation.technicalDepth}/10</span>
                                 <span>Problem Solving: {msg.evaluation.problemSolving}/10</span>
                               </div>
-                              <p className="text-neutral-400 print:text-neutral-600 mt-1 italic">&ldquo;{msg.evaluation.feedback}&rdquo;</p>
+                              <p className="text-txt-secondary print:text-neutral-600 mt-1 italic">&ldquo;{msg.evaluation.feedback}&rdquo;</p>
                             </div>
                           )}
                         </div>
@@ -437,26 +425,26 @@ export default function FeedbackReportPage({ params }: FeedbackPageProps) {
                   })}
                 </div>
               ) : (
-                <div className="text-center py-10 text-neutral-500 text-sm">No messages available in this session.</div>
+                <div className="text-center py-10 text-txt-secondary text-xs font-mono">NO MESSAGES AVAILABLE IN THIS SESSION.</div>
               )}
             </div>
           )}
 
           {/* TAB 3: ACTION STUDY PLAN */}
           {(activeTab === 'action_plan' || typeof window === 'undefined') && (
-            <div className="space-y-8 print:block print:mt-10">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="space-y-6 print:block print:mt-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 
                 {/* Areas to improve */}
-                <div className="glass-card p-6 rounded-2xl border border-white/[0.05] space-y-4 print:border-neutral-200">
-                  <div className="flex items-center gap-2 text-indigo-400 font-bold">
-                    <BookOpen className="w-5 h-5" />
-                    <h4>Recommended Areas of Study</h4>
+                <div className="flat-card p-6 rounded-xl space-y-4 print:border-neutral-200">
+                  <div className="flex items-center gap-2 text-accent font-bold">
+                    <BookOpen className="w-4 h-4" />
+                    <h4 className="font-display text-sm uppercase tracking-wider">Recommended Areas of Study</h4>
                   </div>
-                  <ul className="space-y-3.5">
+                  <ul className="space-y-3 font-sans text-xs md:text-sm">
                     {areasToImprove.map((item: string, i: number) => (
-                      <li key={i} className="text-sm text-neutral-300 print:text-neutral-800 leading-relaxed flex items-start gap-2.5">
-                        <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 mt-2 flex-shrink-0" />
+                      <li key={i} className="text-txt-secondary print:text-neutral-800 leading-relaxed flex items-start gap-2.5">
+                        <span className="w-1.5 h-1.5 rounded-full bg-accent mt-2 flex-shrink-0" />
                         {item}
                       </li>
                     ))}
@@ -464,18 +452,18 @@ export default function FeedbackReportPage({ params }: FeedbackPageProps) {
                 </div>
 
                 {/* Structured Action Steps */}
-                <div className="glass-card p-6 rounded-2xl border border-white/[0.05] space-y-4 print:border-neutral-200">
-                  <div className="flex items-center gap-2 text-violet-400 font-bold">
-                    <Layers className="w-5 h-5" />
-                    <h4>Action Plan Steps</h4>
+                <div className="flat-card p-6 rounded-xl space-y-4 print:border-neutral-200">
+                  <div className="flex items-center gap-2 text-accent font-bold">
+                    <Layers className="w-4 h-4" />
+                    <h4 className="font-display text-sm uppercase tracking-wider">Action Plan Steps</h4>
                   </div>
-                  <div className="space-y-4">
+                  <div className="space-y-3 font-sans text-xs md:text-sm">
                     {actionPlan.map((step: string, i: number) => (
                       <div key={i} className="flex items-start gap-3">
-                        <div className="w-6 h-6 rounded-lg bg-violet-500/10 border border-violet-500/20 flex items-center justify-center text-[10px] font-bold text-violet-400 flex-shrink-0 mt-0.5">
+                        <div className="w-5 h-5 rounded bg-accent/15 border border-accent/30 flex items-center justify-center text-[9px] font-mono font-bold text-accent flex-shrink-0 mt-0.5">
                           {i + 1}
                         </div>
-                        <p className="text-sm text-neutral-300 print:text-neutral-800 leading-relaxed">
+                        <p className="text-txt-secondary print:text-neutral-800 leading-relaxed">
                           {step}
                         </p>
                       </div>
@@ -486,14 +474,14 @@ export default function FeedbackReportPage({ params }: FeedbackPageProps) {
               </div>
 
               {/* Next steps CTA */}
-              <div className="bg-indigo-500/5 border border-indigo-500/10 p-8 rounded-3xl text-center space-y-4 print:hidden">
-                <h4 className="text-lg font-bold text-white">Ready to iterate and scale your score?</h4>
-                <p className="text-sm text-neutral-400 max-w-md mx-auto">
+              <div className="flat-card p-6 md:p-8 rounded-xl text-center space-y-3 bg-surface print:hidden">
+                <h4 className="text-base font-semibold text-txt-primary font-display">Ready to iterate and scale your score?</h4>
+                <p className="text-xs text-txt-secondary max-w-sm mx-auto leading-relaxed">
                   Take another mock run on the same track or challenge other interviewer personas to build your adaptability.
                 </p>
                 <Link
                   href="/interview-selection"
-                  className="inline-flex items-center gap-2 bg-gradient-to-r from-indigo-500 to-violet-600 text-white font-medium px-6 py-3 rounded-xl hover:shadow-lg active:scale-95 transition-all"
+                  className="inline-flex items-center gap-2 bg-accent text-base font-semibold px-6 py-2.5 rounded hover:bg-opacity-95 active:scale-95 transition-all text-xs"
                 >
                   Start New Session
                   <ArrowRight className="w-4 h-4" />
@@ -507,8 +495,8 @@ export default function FeedbackReportPage({ params }: FeedbackPageProps) {
       </main>
 
       {/* Footer */}
-      <footer className="w-full border-t border-white/[0.05] py-6 text-center text-xs text-neutral-600 mt-20 print:hidden">
-        <span>© {new Date().getFullYear()} Intrvyu AI. Comprehensive Feedback Card.</span>
+      <footer className="w-full border-t border-hairline py-6 text-center text-[10px] text-txt-secondary mt-20 print:hidden">
+        <span>© {new Date().getFullYear()} Intrvyu AI. Feedback Card.</span>
       </footer>
     </div>
   );

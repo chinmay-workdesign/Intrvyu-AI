@@ -8,7 +8,6 @@ import { api } from '../../../services/api';
 import { 
   Mic, 
   ArrowLeft, 
-  Settings, 
   Terminal, 
   Users, 
   Briefcase, 
@@ -21,12 +20,11 @@ interface PersonaCard {
   id: string;
   name: string;
   role: string;
+  code: string;
   voice: string;
   tone: string;
   description: string;
   topics: string[];
-  colorClass: string;
-  bgGlow: string;
   icon: React.ReactNode;
 }
 
@@ -40,49 +38,45 @@ export default function InterviewSelectionPage() {
       id: 'system_design',
       name: 'Sarah',
       role: 'Lead Systems Architect',
-      voice: 'Aoede (Feminine)',
-      tone: 'Demanding & Analytical',
+      code: 'SYS-DESIGN / SR-902',
+      voice: 'aoede (feminine)',
+      tone: 'demanding & analytical',
       description: 'Chief Systems Architect. Focuses on scalability, database tradeoffs, sharding, distributed caches, high availability, and CAP theorem bottlenecks.',
       topics: ['Scalability & Latency', 'Database Sharding/Replica', 'Distributed Caches', 'CAP Theorem', 'Fault Tolerance'],
-      colorClass: 'text-indigo-400 border-indigo-500/20 hover:border-indigo-500/50',
-      bgGlow: 'bg-indigo-500/5',
-      icon: <Database className="w-6 h-6 text-indigo-400" />
+      icon: <Database className="w-5 h-5 text-accent" />
     },
     {
       id: 'technical',
       name: 'Alex',
       role: 'Staff Software Engineer',
-      voice: 'Fenrir (Masculine)',
-      tone: 'Precise & Detailed',
-      description: 'Staff Engineer in Core Infrastructure. Probes algorithmic runtime, data structures, Big O, concurrency threads, and clean SOLID structures.',
+      code: 'CORE-INFRA / AX-104',
+      voice: 'fenrir (masculine)',
+      tone: 'precise & detailed',
+      description: 'Staff Engineer in Core Infrastructure. Probes algorithmic runtime, data structures, Big O complexity, concurrency threads, and clean SOLID structures.',
       topics: ['Big O Complexity', 'Data Structures', 'Concurrency & Locking', 'SOLID Patterns', 'Edge Case Tests'],
-      colorClass: 'text-emerald-400 border-emerald-500/20 hover:border-emerald-500/50',
-      bgGlow: 'bg-emerald-500/5',
-      icon: <Terminal className="w-6 h-6 text-emerald-400" />
+      icon: <Terminal className="w-5 h-5 text-accent" />
     },
     {
       id: 'behavioral',
       name: 'Elena',
       role: 'Engineering Manager',
-      voice: 'Kore (Feminine)',
-      tone: 'Pragmatic & Empathic',
+      code: 'ENG-MGMNT / EL-411',
+      voice: 'kore (feminine)',
+      tone: 'pragmatic & empathic',
       description: 'Engineering Manager. Demands structured response utilizing STAR framework. Evaluates action ownership, team conflicts, failures, and timelines.',
       topics: ['STAR Response Pattern', 'Initiative & Leadership', 'Conflict Resolution', 'Pragmatism & Planning', 'Timeline Pressure'],
-      colorClass: 'text-violet-400 border-violet-500/20 hover:border-violet-500/50',
-      bgGlow: 'bg-violet-500/5',
-      icon: <Briefcase className="w-6 h-6 text-violet-400" />
+      icon: <Briefcase className="w-5 h-5 text-accent" />
     },
     {
       id: 'hr',
       name: 'David',
       role: 'Talent Acquisition Director',
-      voice: 'Puck (Masculine)',
-      tone: 'Warm & Probing',
+      code: 'TALENT-ACQ / DV-730',
+      voice: 'puck (masculine)',
+      tone: 'warm & probing',
       description: 'Talent Director with 15+ years of experience. Evaluates team collaborations, career vision, adaptability, growth grit, and culture values.',
       topics: ['Culture-fit Alignment', 'Cross-team Operations', 'Resilience & Grit', 'Career Trajectory', 'Growth Mindset'],
-      colorClass: 'text-purple-400 border-purple-500/20 hover:border-purple-500/50',
-      bgGlow: 'bg-purple-500/5',
-      icon: <Users className="w-6 h-6 text-purple-400" />
+      icon: <Users className="w-5 h-5 text-accent" />
     }
   ];
 
@@ -107,72 +101,73 @@ export default function InterviewSelectionPage() {
   };
 
   return (
-    <div className="min-h-screen bg-neutral-950 text-neutral-100 flex flex-col justify-between py-12 px-6">
-      <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] rounded-full bg-indigo-500/5 blur-[150px] pointer-events-none" />
-      <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-violet-600/5 blur-[150px] pointer-events-none" />
-
-      <div className="w-full max-w-6xl mx-auto relative z-10 flex-1 flex flex-col justify-center space-y-10">
+    <div className="min-h-screen bg-base text-txt-primary flex flex-col justify-between py-12 px-6">
+      <div className="w-full max-w-6xl mx-auto relative z-10 flex-1 flex flex-col justify-center space-y-8">
         
         {/* Header */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 border-b border-white/[0.05] pb-6">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 border-b border-hairline pb-6">
           <div className="space-y-1 text-center sm:text-left">
             <Link 
               href="/dashboard"
-              className="inline-flex items-center gap-1.5 text-xs text-neutral-400 hover:text-white transition-colors mb-2"
+              className="inline-flex items-center gap-1.5 text-xs text-txt-secondary hover:text-txt-primary transition-colors mb-2"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
               Back to Dashboard
             </Link>
-            <h1 className="text-3xl font-extrabold text-white tracking-tight">Select Your Interviewer</h1>
-            <p className="text-sm text-neutral-400">Choose a track persona to conduct your mock session. Dynamic VAD voice interaction will start immediately.</p>
+            <h1 className="text-3xl font-display font-semibold text-txt-primary tracking-tight">Select Your Interviewer</h1>
+            <p className="text-xs text-txt-secondary max-w-xl">
+              Choose a track persona to conduct your mock session. Dynamic voice interaction will start immediately.
+            </p>
           </div>
         </div>
 
         {/* Personas Cards Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {personas.map((persona) => {
             const isLoading = loadingId === persona.id;
             return (
               <div 
                 key={persona.id}
                 onClick={() => !loadingId && handleSelectPersona(persona.id)}
-                className={`glass-card p-6 md:p-8 rounded-3xl border flex flex-col justify-between transition-all duration-300 relative overflow-hidden group cursor-pointer ${
-                  loadingId ? 'opacity-60 cursor-not-allowed' : 'glass-card-hover'
-                } ${persona.colorClass}`}
+                className={`flat-card p-6 md:p-8 rounded-xl flex flex-col justify-between transition-all duration-200 relative overflow-hidden group cursor-pointer ${
+                  loadingId ? 'opacity-40 cursor-not-allowed' : 'hover:border-accent/40'
+                }`}
               >
-                {/* Background glow hover */}
-                <div className={`absolute inset-0 ${persona.bgGlow} opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none`} />
-
-                <div className="space-y-4 relative z-10">
-                  <div className="flex items-center justify-between">
-                    <div className="w-12 h-12 rounded-xl bg-white/[0.03] border border-white/5 flex items-center justify-center">
+                <div className="space-y-5 relative z-10">
+                  {/* Top card bar */}
+                  <div className="flex items-center justify-between border-b border-hairline pb-3">
+                    <span className="text-[10px] font-mono text-accent font-semibold tracking-wider">
+                      {persona.code}
+                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[9px] font-mono text-txt-secondary uppercase tracking-widest">
+                        voice: {persona.voice}
+                      </span>
                       {persona.icon}
                     </div>
-                    <span className="text-[10px] uppercase font-bold tracking-widest text-neutral-500">
-                      Voice: {persona.voice}
-                    </span>
                   </div>
 
+                  {/* Persona details */}
                   <div className="space-y-1">
-                    <h3 className="text-xl font-bold text-white tracking-tight">
+                    <h3 className="text-xl font-display font-semibold text-txt-primary tracking-tight">
                       {persona.name}
                     </h3>
-                    <p className="text-xs font-semibold text-neutral-400">
-                      {persona.role} • <span className="italic">{persona.tone}</span>
+                    <p className="text-xs font-mono text-txt-secondary uppercase tracking-tight">
+                      {persona.role} · <span className="text-accent">{persona.tone}</span>
                     </p>
                   </div>
 
-                  <p className="text-sm text-neutral-300 leading-relaxed pt-2">
+                  <p className="text-xs md:text-sm text-txt-secondary leading-relaxed pt-1">
                     {persona.description}
                   </p>
 
                   <div className="pt-2">
-                    <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-wider block mb-2">Key Areas assessed:</span>
+                    <span className="text-[9px] font-mono text-txt-secondary uppercase tracking-wider block mb-2 font-bold">Key Areas Assessed:</span>
                     <div className="flex flex-wrap gap-1.5">
                       {persona.topics.map((topic, i) => (
                         <span 
                           key={i}
-                          className="bg-white/[0.03] border border-white/[0.06] text-[10px] text-neutral-400 px-2.5 py-1 rounded-md"
+                          className="bg-base border border-hairline text-[10px] text-txt-secondary px-2.5 py-0.5 rounded font-mono"
                         >
                           {topic}
                         </span>
@@ -181,10 +176,11 @@ export default function InterviewSelectionPage() {
                   </div>
                 </div>
 
+                {/* Footer Action */}
                 <div className="pt-6 relative z-10 flex items-center justify-end">
                   <button 
                     disabled={!!loadingId}
-                    className="inline-flex items-center justify-center gap-1.5 bg-white text-neutral-950 font-semibold px-4 py-2.5 rounded-xl hover:bg-neutral-200 text-xs shadow-lg shadow-white/5 transition-transform active:scale-[0.97]"
+                    className="inline-flex items-center justify-center gap-1.5 bg-accent text-base font-semibold px-4 py-2 rounded text-xs hover:bg-opacity-95 transition-all active:scale-[0.98]"
                   >
                     {isLoading ? (
                       <>
@@ -206,7 +202,7 @@ export default function InterviewSelectionPage() {
 
       </div>
 
-      <footer className="w-full border-t border-white/[0.05] py-6 text-center text-xs text-neutral-600 mt-20">
+      <footer className="w-full border-t border-hairline py-6 text-center text-[10px] text-txt-secondary mt-20">
         <span>© {new Date().getFullYear()} Intrvyu AI. Select Persona.</span>
       </footer>
     </div>

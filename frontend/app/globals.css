@@ -1,37 +1,32 @@
 @import "tailwindcss";
 
+@theme {
+  --color-base: #14130F;
+  --color-surface: #1C1B17;
+  --color-hairline: #34312A;
+  --color-accent: #D98E3F;
+  --color-live: #E5484D;
+  --color-strong: #7A9B85;
+  --color-weak: #B5674A;
+  --color-txt-primary: #EDE9E0;
+  --color-txt-secondary: #9A968D;
+
+  --font-display: var(--font-display), "Plus Jakarta Sans", "General Sans", "Neue Montreal", "Söhne", sans-serif;
+  --font-sans: var(--font-sans), "Inter", sans-serif;
+  --font-mono: var(--font-mono), "JetBrains Mono", monospace;
+}
+
 @layer utilities {
-  .glass-card {
-    background: rgba(17, 17, 17, 0.65);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-  }
-
-  .glass-card-hover {
-    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-  }
-  
-  .glass-card-hover:hover {
-    background: rgba(25, 25, 25, 0.85);
-    border-color: rgba(99, 102, 241, 0.4);
-    box-shadow: 0 0 25px rgba(99, 102, 241, 0.15);
-    transform: translateY(-2px);
-  }
-
-  .glow-ring {
-    box-shadow: 0 0 20px rgba(99, 102, 241, 0.2);
-  }
-
-  .text-glow {
-    text-shadow: 0 0 12px rgba(255, 255, 255, 0.2);
+  .flat-card {
+    background-color: #1C1B17;
+    border: 1px solid #34312A;
   }
 
   .grid-pattern {
     background-size: 40px 40px;
     background-image: 
-      linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-      linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+      linear-gradient(to right, rgba(237, 233, 224, 0.015) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(237, 233, 224, 0.015) 1px, transparent 1px);
   }
 }
 
@@ -42,43 +37,30 @@
 }
 
 ::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.2);
+  background: #14130F;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 4px;
+  background: #34312A;
+  border-radius: 2px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.25);
+  background: #D98E3F;
 }
 
-/* Pulse animation for record ring */
-@keyframes ring-glow-pulse {
+/* Pulse animation for true red recording light only */
+@keyframes recording-pulse {
   0%, 100% {
-    transform: scale(1);
-    opacity: 0.2;
+    opacity: 0.4;
+    transform: scale(0.95);
   }
   50% {
+    opacity: 1.0;
     transform: scale(1.15);
-    opacity: 0.55;
   }
 }
 
-.animate-pulse-ring {
-  animation: ring-glow-pulse 2.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-}
-
-@keyframes voice-wave-pulse {
-  0%, 100% {
-    height: 12px;
-  }
-  50% {
-    height: 48px;
-  }
-}
-
-.animate-wave-bar {
-  animation: voice-wave-pulse 1.2s ease-in-out infinite;
+.animate-rec-pulse {
+  animation: recording-pulse 1.8s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }

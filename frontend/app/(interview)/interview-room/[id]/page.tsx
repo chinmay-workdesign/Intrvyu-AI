@@ -13,8 +13,7 @@ import {
   Loader2, 
   Volume2, 
   Info,
-  Clock,
-  Sparkles
+  Clock
 } from 'lucide-react';
 
 interface InterviewRoomProps {
@@ -115,7 +114,7 @@ export default function InterviewRoomPage({ params }: InterviewRoomProps) {
     }
   }, [isConnected, isProcessing, interviewerSpeaking, isRecording]);
 
-  // Canvas visualizer rendering loop
+  // Canvas visualizer rendering loop (Horizontal Equalizer / Waveform)
   useEffect(() => {
     let animationId: number;
     const canvas = canvasRef.current;
@@ -124,103 +123,87 @@ export default function InterviewRoomPage({ params }: InterviewRoomProps) {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    canvas.width = canvas.offsetWidth * window.devicePixelRatio;
-    canvas.height = canvas.offsetHeight * window.devicePixelRatio;
-    ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+    // Handle high DPI screens
+    const resizeCanvas = () => {
+      const rect = canvas.getBoundingClientRect();
+      canvas.width = rect.width * window.devicePixelRatio;
+      canvas.height = rect.height * window.devicePixelRatio;
+      ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+    };
+
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
 
     const width = canvas.width / window.devicePixelRatio;
     const height = canvas.height / window.devicePixelRatio;
 
-    // Data buffers for FFT analysers
-    const micDataArray = new Uint8Array(128);
-    const speakerDataArray = new Uint8Array(128);
+    // Buffer for FFT analyser
+    const dataArray = new Uint8Array(48);
 
     const draw = () => {
       animationId = requestAnimationFrame(draw);
       ctx.clearRect(0, 0, width, height);
 
-      let amplitude = 0.15; // baseline breathing amplitude
+      let hasData = false;
 
       // Read volume data
-      if (status === 'listening' && micAnalyser) {
-        micAnalyser.getByteFrequencyData(micDataArray);
-        let sum = 0;
-        for (let i = 0; i < micDataArray.length; i++) {
-          sum += micDataArray[i];
-        }
-        amplitude = Math.max(0.15, (sum / micDataArray.length) / 55); // scale mic input
+      if (status === 'listening' && micAnalyser && !isMuted) {
+        micAnalyser.getByteFrequencyData(dataArray);
+        hasData = true;
       } else if (status === 'speaking' && speakerAnalyser) {
-        speakerAnalyser.getByteFrequencyData(speakerDataArray);
-        let sum = 0;
-        for (let i = 0; i < speakerDataArray.length; i++) {
-          sum += speakerDataArray[i];
-        }
-        amplitude = Math.max(0.15, (sum / speakerDataArray.length) / 45); // scale speaker input
+        speakerAnalyser.getByteFrequencyData(dataArray);
+        hasData = true;
+      }
+
+      // Draw horizontal equalizer bars centered around the middle line
+      const barWidth = 3;
+      const barGap = 3;
+      const totalWidth = dataArray.length * (barWidth + barGap);
+      const startX = (width - totalWidth) / 2;
+      const centerY = height / 2;
+
+      // Select color token based on state
+      let barColor = '#34312A'; // idle hairline grey
+      if (status === 'listening' && !isMuted) {
+        barColor = '#E5484D'; // True Red for active user recording
+      } else if (status === 'speaking') {
+        barColor = '#D98E3F'; // Copper/Amber for interviewer voice
       } else if (status === 'processing') {
-        amplitude = 0.25 + Math.sin(Date.now() / 150) * 0.08; // processing wave
+        barColor = '#7A9B85'; // Muted Sage for backend processing
       }
 
-      // Draw multi-layered orbital glowing rings
-      const radius = 90;
-      const center = { x: width / 2, y: height / 2 };
+      ctx.fillStyle = barColor;
 
-      // Outer soft pulse ring
-      ctx.beginPath();
-      ctx.arc(center.x, center.y, radius + (amplitude * 35), 0, Math.PI * 2);
-      ctx.strokeStyle = status === 'listening' 
-        ? 'rgba(16, 185, 129, 0.04)' // Green for listening
-        : status === 'speaking' 
-        ? 'rgba(99, 102, 241, 0.04)' // Indigo for speaking
-        : 'rgba(255, 255, 255, 0.02)';
-      ctx.fillStyle = status === 'listening'
-        ? 'rgba(16, 185, 129, 0.01)'
-        : status === 'speaking'
-        ? 'rgba(99, 102, 241, 0.01)'
-        : 'rgba(255, 255, 255, 0.005)';
-      ctx.fill();
-      ctx.lineWidth = 2;
-      ctx.stroke();
+      for (let i = 0; i < dataArray.length; i++) {
+        let value = dataArray[i];
+        let heightPercent = value / 255;
+        let barHeight = heightPercent * (height * 0.6);
 
-      // Middle active ring
-      ctx.beginPath();
-      ctx.arc(center.x, center.y, radius + (amplitude * 18), 0, Math.PI * 2);
-      ctx.strokeStyle = status === 'listening'
-        ? 'rgba(16, 185, 129, 0.12)'
-        : status === 'speaking'
-        ? 'rgba(99, 102, 241, 0.12)'
-        : 'rgba(255, 255, 255, 0.04)';
-      ctx.stroke();
+        // Breathing effect for idle states
+        if (!hasData) {
+          barHeight = 4 + Math.sin(i * 0.4 + Date.now() / 250) * 3;
+        } else if (status === 'processing') {
+          // Scanning pulse for processing
+          barHeight = 6 + Math.sin((i - Date.now() / 60) * 0.3) * 6;
+        }
 
-      // Inner wave ripple lines (Circular sine waves)
-      const numPoints = 80;
-      ctx.beginPath();
-      for (let i = 0; i <= numPoints; i++) {
-        const angle = (i / numPoints) * Math.PI * 2;
-        // Apply sinusoidal noise based on time and audio amplitude
-        const offset = Math.sin(angle * 8 + Date.now() / 200) * (amplitude * 10);
-        const r = radius + offset;
-        const x = center.x + r * Math.cos(angle);
-        const y = center.y + r * Math.sin(angle);
-        
-        if (i === 0) ctx.moveTo(x, y);
-        else ctx.lineTo(x, y);
+        const x = startX + i * (barWidth + barGap);
+        const y = centerY - barHeight / 2;
+
+        ctx.beginPath();
+        // Drawing symmetric bars growing up & down
+        ctx.roundRect(x, y, barWidth, Math.max(2, barHeight), 1.5);
+        ctx.fill();
       }
-      ctx.closePath();
-      ctx.strokeStyle = status === 'listening'
-        ? 'rgba(16, 185, 129, 0.6)'
-        : status === 'speaking'
-        ? 'rgba(99, 102, 241, 0.6)'
-        : 'rgba(255, 255, 255, 0.15)';
-      ctx.lineWidth = 1.5;
-      ctx.stroke();
     };
 
     draw();
 
     return () => {
       cancelAnimationFrame(animationId);
+      window.removeEventListener('resize', resizeCanvas);
     };
-  }, [status, micAnalyser, speakerAnalyser]);
+  }, [status, micAnalyser, speakerAnalyser, isMuted]);
 
   // Handle click on mic button (unmute/record toggle)
   const handleMicToggle = async () => {
@@ -273,16 +256,16 @@ export default function InterviewRoomPage({ params }: InterviewRoomProps) {
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-neutral-950 p-6">
-        <div className="glass-card p-8 rounded-2xl border border-white/10 text-center space-y-4 max-w-sm">
-          <Info className="w-8 h-8 text-indigo-400 mx-auto" />
-          <h3 className="text-lg font-bold text-white">Error Accessing Session</h3>
-          <p className="text-sm text-neutral-400">
+      <div className="min-h-screen flex items-center justify-center bg-base p-6 text-txt-primary">
+        <div className="flat-card p-8 rounded-xl text-center space-y-4 max-w-sm">
+          <Info className="w-8 h-8 text-accent mx-auto" />
+          <h3 className="text-lg font-display font-semibold">Error Accessing Session</h3>
+          <p className="text-xs text-txt-secondary leading-relaxed">
             This interview session is either invalid or you do not have permission to view it.
           </p>
           <button 
             onClick={() => router.push('/dashboard')}
-            className="w-full bg-white text-neutral-950 font-semibold py-2.5 rounded-xl hover:bg-neutral-200 text-sm transition-colors"
+            className="w-full bg-accent text-base font-semibold py-2.5 rounded text-xs active:scale-[0.98] transition-all"
           >
             Return to Dashboard
           </button>
@@ -296,29 +279,31 @@ export default function InterviewRoomPage({ params }: InterviewRoomProps) {
   const interviewerTitle = sessionData ? (sessionData.type === 'system_design' ? 'Lead Architect' : sessionData.type === 'technical' ? 'Staff Engineer' : sessionData.type === 'behavioral' ? 'Engineering Manager' : 'Talent Director') : 'AI';
 
   return (
-    <div className="min-h-screen bg-neutral-950 text-neutral-100 flex flex-col justify-between overflow-hidden">
+    <div className="min-h-screen bg-base text-txt-primary flex flex-col justify-between overflow-hidden">
       
-      {/* Radial Glow Layer */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[70%] h-[70%] rounded-full bg-indigo-500/2 blur-[180px] pointer-events-none" />
-
       {/* HUD Header */}
       <header className="w-full max-w-5xl mx-auto px-6 py-6 flex items-center justify-between relative z-10">
-        <div className="space-y-0.5">
+        <div className="space-y-1">
           <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-indigo-500 animate-ping" />
-            <h2 className="font-bold text-white tracking-tight text-base">
+            {/* Live recording indicator light pulses ONLY when actively recording (status is 'listening') */}
+            <span className={`w-2.5 h-2.5 rounded-full ${
+              status === 'listening' && !isMuted 
+                ? 'bg-live animate-rec-pulse' 
+                : 'bg-txt-secondary opacity-30'
+            }`} />
+            <h2 className="font-display font-semibold text-txt-primary text-base">
               {interviewerName}
             </h2>
           </div>
-          <span className="text-xs text-neutral-500 font-semibold uppercase tracking-wider block">
-            {interviewerTitle} • Active Run
+          <span className="text-[9px] text-txt-secondary font-mono uppercase tracking-wider block">
+            {interviewerTitle} · LIVE SESSION
           </span>
         </div>
 
         {/* Timer HUD */}
-        <div className="inline-flex items-center gap-2 bg-white/[0.02] border border-white/[0.06] px-4 py-2 rounded-xl text-neutral-300">
-          <Clock className="w-4 h-4 text-indigo-400" />
-          <span className="font-mono font-bold text-sm tracking-widest">
+        <div className="inline-flex items-center gap-2 bg-surface border border-hairline px-3 py-1.5 rounded text-txt-primary">
+          <Clock className="w-3.5 h-3.5 text-accent" />
+          <span className="font-mono font-bold text-xs tracking-widest">
             {formatClock(timeRemaining)}
           </span>
         </div>
@@ -327,85 +312,85 @@ export default function InterviewRoomPage({ params }: InterviewRoomProps) {
       {/* Visual Canvas Visualizer */}
       <main className="flex-1 flex flex-col items-center justify-center max-w-2xl mx-auto w-full px-6 relative z-10">
         
-        <div className="w-full aspect-square relative flex items-center justify-center max-h-[360px]">
-          {/* Visual canvas */}
-          <canvas ref={canvasRef} className="absolute inset-0 w-full h-full cursor-pointer rounded-full" />
+        <div className="w-full aspect-[4/3] max-h-[300px] relative flex items-center justify-center">
+          {/* Responsive Equalizer Canvas */}
+          <canvas ref={canvasRef} className="absolute inset-0 w-full h-full" />
           
-          {/* Inner Glowing Mic Button */}
+          {/* Inner Studio Mic Button */}
           <button
             onClick={handleMicToggle}
             disabled={status === 'connecting' || status === 'processing' || isEnding}
-            className={`w-28 h-28 rounded-full flex flex-col items-center justify-center shadow-2xl relative z-10 border transition-all duration-300 active:scale-95 cursor-pointer ${
-              status === 'listening'
-                ? 'bg-emerald-500/10 border-emerald-500/40 text-emerald-400 shadow-emerald-500/5'
+            className={`w-24 h-24 rounded-full flex flex-col items-center justify-center relative z-10 border transition-all duration-250 active:scale-95 cursor-pointer ${
+              status === 'listening' && !isMuted
+                ? 'bg-surface border-live text-live'
                 : status === 'speaking'
-                ? 'bg-indigo-500/10 border-indigo-500/40 text-indigo-400 shadow-indigo-500/5'
-                : 'bg-neutral-900/80 border-white/10 text-neutral-400 hover:text-white'
+                ? 'bg-surface border-accent text-accent'
+                : 'bg-surface border-hairline text-txt-secondary hover:text-txt-primary'
             }`}
           >
             {isMuted ? (
-              <MicOff className="w-8 h-8" />
+              <MicOff className="w-6 h-6" />
             ) : status === 'connecting' || status === 'processing' ? (
-              <Loader2 className="w-8 h-8 animate-spin text-indigo-400" />
+              <Loader2 className="w-6 h-6 animate-spin text-accent" />
             ) : status === 'speaking' ? (
-              <Volume2 className="w-8 h-8 animate-pulse" />
+              <Volume2 className="w-6 h-6" />
             ) : (
-              <Mic className="w-8 h-8" />
+              <Mic className="w-6 h-6" />
             )}
-            <span className="text-[9px] font-bold tracking-widest uppercase mt-2 block opacity-60">
+            <span className="text-[8px] font-mono tracking-wider uppercase mt-1.5 block opacity-70">
               {isMuted ? 'Muted' : status === 'listening' ? 'Speak' : status === 'speaking' ? 'Talk' : 'Idle'}
             </span>
           </button>
         </div>
 
         {/* Live HUD status description */}
-        <div className="text-center mt-12 space-y-2">
-          <p className="text-sm font-semibold tracking-wide text-neutral-300 uppercase">
-            {status === 'connecting' && 'Connecting to Live Session...'}
-            {status === 'ready' && 'Ready. Waiting for user response.'}
-            {status === 'listening' && 'Interviewer Listening...'}
-            {status === 'speaking' && `${interviewerName} is speaking...`}
-            {status === 'processing' && 'Processing vocal analysis...'}
+        <div className="text-center mt-8 space-y-2">
+          <p className="text-xs font-mono tracking-wider text-txt-primary uppercase">
+            {status === 'connecting' && 'CONNECTING TO DUPLEX STREAM...'}
+            {status === 'ready' && 'READY · WAITING FOR RESPONSE'}
+            {status === 'listening' && 'STUDIO LIVE · LISTENING'}
+            {status === 'speaking' && `STUDIO LIVE · ${interviewerName.toUpperCase()} SPEAKING`}
+            {status === 'processing' && 'ANALYZING VOCAL DATA NODES...'}
           </p>
-          <p className="text-xs text-neutral-500 max-w-sm leading-relaxed mx-auto">
-            {status === 'listening' && 'Speak naturally. The AI will hear you and automatically respond when you pause or stop.'}
-            {status === 'speaking' && 'You can interrupt the AI at any time. Simply start speaking and it will stop playing.'}
-            {status === 'processing' && 'Evaluation nodes are processing scores and coverage guidelines...'}
+          <p className="text-xs text-txt-secondary max-w-sm leading-relaxed mx-auto">
+            {status === 'listening' && 'Speak naturally. The AI will hear you and respond when you pause or stop speaking.'}
+            {status === 'speaking' && 'You can interrupt Sarah at any time. Simply start speaking and she will pause.'}
+            {status === 'processing' && 'STAR metrics are compiling. Scoring engine is evaluating candidate response.'}
           </p>
         </div>
       </main>
 
       {/* HUD Controller footer */}
-      <footer className="w-full max-w-md mx-auto px-6 pb-12 flex items-center justify-center gap-6 relative z-10">
+      <footer className="w-full max-w-md mx-auto px-6 pb-12 flex items-center justify-center gap-4 relative z-10">
         
         {/* Toggle Mute / Mic */}
         <button
           onClick={handleMicToggle}
           disabled={status === 'connecting' || status === 'processing' || isEnding}
-          className={`p-4 rounded-2xl border transition-all cursor-pointer ${
+          className={`p-3.5 rounded border transition-all cursor-pointer ${
             isMuted 
-              ? 'bg-red-500/10 border-red-500/20 text-red-400 hover:bg-red-500/20' 
-              : 'bg-white/[0.02] border-white/10 text-neutral-400 hover:text-white hover:bg-white/[0.05]'
+              ? 'bg-live/15 border-live text-live' 
+              : 'bg-surface border-hairline text-txt-secondary hover:text-txt-primary hover:bg-base'
           }`}
           title={isMuted ? 'Unmute microphone' : 'Mute microphone'}
         >
-          {isMuted ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
+          {isMuted ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
         </button>
 
-        {/* Force Complete End Session */}
+        {/* Force Complete End Session - Not red, flat neutral grey styled button */}
         <button
           onClick={handleEndInterview}
           disabled={isEnding || status === 'connecting'}
-          className="flex-1 inline-flex items-center justify-center gap-2 bg-gradient-to-r from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700 disabled:from-neutral-800 disabled:to-neutral-900 disabled:text-neutral-500 text-white font-semibold py-4 px-6 rounded-2xl transition-all shadow-lg shadow-red-500/5 active:scale-[0.98] cursor-pointer"
+          className="flex-1 inline-flex items-center justify-center gap-2 bg-surface border border-hairline hover:bg-base disabled:opacity-40 text-txt-primary font-semibold py-3.5 px-6 rounded text-xs transition-all active:scale-[0.98] cursor-pointer"
         >
           {isEnding ? (
             <>
-              <Loader2 className="w-4 h-4 animate-spin" />
+              <Loader2 className="w-4 h-4 animate-spin text-accent" />
               Compiling Report...
             </>
           ) : (
             <>
-              <PhoneOff className="w-4 h-4" />
+              <PhoneOff className="w-4 h-4 text-txt-secondary" />
               End Interview
             </>
           )}
